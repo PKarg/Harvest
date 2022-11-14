@@ -1,9 +1,107 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title>Add new Harvest</title>
+    <title>Sign Up</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #52734D;
+        }
+
+        .container {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        #signupform {
+            padding: 10px;
+            text-align: center;
+            margin: 10px auto;
+            max-width: 400px;
+            height: 420px;
+            border-radius: 10px;
+            font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+            background: #FEFFDE;
+        }
+
+        .formhead {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .auth {
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            background: #FEFFDE;
+            border-color: #000;
+            font-size: 16px;
+        }
+
+        #signup-submit {
+            background: #91C788;
+            alignment: center;
+            cursor: pointer;
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+        }
+
+        #icon {
+            font-size: 36px;
+            color: #FEFFDE;
+        }
+
+        #icon-text {
+            font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+        }
+
+    </style>
 {% endblock %}
 
 {% block content %}
+    <div class="container">
+        <p id="icon"><i class="fa-solid fa-apple-whole"></i> <span id="icon-text">Harvests</span></p>
+        <div id="signupform">
+            <p class="formhead">Create New Harvest Account</p>
+            <form method="post">
+            {% csrf_token %}
+
+                {{ form.username.label_tag }}
+                {{ form.username }}
+                <br>
+
+                {{ form.password1.label_tag }}
+                {{ form.password1 }}
+                <br>
+
+                {{ form.password2.label_tag }}
+                {{ form.password2 }}
+                <br>
+
+                <button type="submit" id="signup-submit">Sign Up</button>
+            </form>
+
+        {% if form.errors %}
+            {% for v in form.errors.values %}
+            <p id="password-error">{{ v }}</p>
+            {% endfor %}
+        {% endif %}
+        </div>
+    </div>
 
 {% endblock %}

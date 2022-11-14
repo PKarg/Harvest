@@ -1,9 +1,75 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title>Add new Harvest</title>
+    <title>Sign Up</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #52734D;
+            font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+        }
+
+        .container {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        #logout {
+            max-width: 400px;
+            height: 160px;
+            text-align: center;
+            margin: 10px auto;
+            border-radius: 10px;
+            background: #FEFFDE;
+            padding: 10px;
+        }
+
+        #text {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .btn-3 {
+            display: block;
+            width: 100%;
+            text-decoration: none;
+            color: #000;
+            font-weight: bolder;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            background: #91C788;
+            margin-top: 20px;
+        }
+
+        .btn-3:hover {
+            background: #52734D;
+        }
+
+        #icon {
+            font-size: 36px;
+            color: #FEFFDE;
+        }
+
+
+    </style>
 {% endblock %}
 
 {% block content %}
+    <div class="container">
+        <p id="icon"><i class="fa-solid fa-apple-whole"></i> Harvests</p>
+        <div id="logout">
+            <span id="text">You have been logged out</span>
+            <a class="btn-3" href="{% url 'login' %}">Log in again</a>
+        </div>
+    </div>
 
 {% endblock %}

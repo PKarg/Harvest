@@ -16,13 +16,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, reverse_lazy
 from django.views.generic import RedirectView
+from django.contrib.auth.views import LoginView
 
 from harvest.views import sign_up
+from harvest.forms import CustomLoginForm
 
 urlpatterns = [
     path("", RedirectView.as_view(url=reverse_lazy("harvest:home"))),
     path("harvest/", include("harvest.urls")),
     path('admin/', admin.site.urls),
+    path("accounts/login/", LoginView.as_view(authentication_form=CustomLoginForm), name="login"),
     path("accounts/", include('django.contrib.auth.urls')),
     path("accounts/signup/", sign_up, name="signup")
 ]
