@@ -5,5 +5,32 @@
 {% endblock %}
 
 {% block content %}
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{ form.date.label }}
+        {{ form.date }}
+        <br>
+
+        {{ form.fruit.label }}
+        {{ form.fruit }}
+        <br>
+
+        {{ form.amount.label }}
+        {{ form.amount }}
+        <br>
+
+        {{ form.price.label }}
+        {{ form.price }}
+        <br>
+
+        <a class="btn-1">Go back</a>
+        <button type="submit" class="btn-1">Add</button>
+
+        {% if form.errors %}
+            {% for v in form.errors.values %}
+            <p id="password-error">{{ v }}</p>
+            {% endfor %}
+        {% endif %}
+    </form>
 
 {% endblock %}

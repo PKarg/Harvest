@@ -32,8 +32,8 @@ class Harvest(models.Model):
     price = models.DecimalField(verbose_name="Price per kg",
                                 max_digits=4,
                                 decimal_places=2,
-                                validators=[MinValueValidator(decimal.Decimal.from_float(0.1)),
-                                            MaxValueValidator(decimal.Decimal.from_float(50.0))])
+                                validators=[MinValueValidator(decimal.Decimal("0.1")),
+                                            MaxValueValidator(decimal.Decimal("50.0"))])
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 

@@ -1,9 +1,65 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block head %}
-    <title>Edit Harvest Data</title>
+    <title>Edit Harvest</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'harvest/style.css' %}">
 {% endblock %}
 
 {% block content %}
-    
+    <nav class="navbar">
+        <div class="nav-menu">
+            <p><i class="fa-solid fa-apple-whole"></i> Harvests</p>
+            <ul>
+                <li><a href="">Dashboard</a></li>
+                <li><a href="">Add Harvest</a></li>
+                <li><a href="">Log Out</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="edit-container">
+        <h3>Edit Harvest: {{ harvest }}</h3>
+        <form action="" method="POST">
+            {% csrf_token %}
+
+            <div class="form-wrap">
+                <p>{{ form.date.label }}</p>
+                {{ form.date }}
+                <br>
+            </div>
+
+
+            <div class="form-wrap">
+                <p>{{ form.fruit.label }}</p>
+                {{ form.fruit }}
+                <br>
+            </div>
+
+
+            <div class="form-wrap">
+                <p>{{ form.amount.label }}</p>
+                {{ form.amount }}
+                <br>
+            </div>
+
+
+            <div class="form-wrap">
+                <p>{{ form.price.label }}</p>
+                {{ form.price }}
+                <br>
+            </div>
+
+            <a class="btn-1" href="{% url 'harvest:harvest-list' %}">Go back</a>
+            <button type="submit" class="btn-1">Save</button>
+
+            {% if form.errors %}
+                {% for v in form.errors.values %}
+                <p id="password-error">{{ v }}</p>
+                {% endfor %}
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="footer"></div>
 {% endblock %}

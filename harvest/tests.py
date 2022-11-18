@@ -4,7 +4,8 @@ from django.test.utils import setup_test_environment
 from django.urls import reverse
 
 from . import views
-from models import Harvest
+from .models import Harvest
+from .forms import HarvestForm
 
 
 class HarvestTests(TestCase):
@@ -37,6 +38,11 @@ class HarvestTests(TestCase):
     def test_edit_harvest_duplicate_raises_exception(self):
         # TODO implement
         pass
+
+
+class HarvestFormTests(TestCase):
+    # TODO implement
+    pass
 
 
 class IndexViewTests(TestCase):
