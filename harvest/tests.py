@@ -117,23 +117,61 @@ class HarvestTests(TestCase):
 
 
 class HarvestFormTests(TestCase):
-    # TODO implement
 
     def test_form_rejects_no_data(self):
-        # TODO implement
-        pass
+        form = HarvestForm(data={})
+        self.assertRaises(KeyError)
+
+    def test_form_rejects_fruit_outside_choice(self):
+        form = HarvestForm(data={
+            "date": datetime.date.today(),
+            "fruit": "kasztan",
+            "amount": 1000,
+            "price": 1.5,})
+        self.assertFalse(form.is_valid())
 
     def test_form_rejects_incomplete_data(self):
-        # TODO implement
-        pass
+        form = HarvestForm(data={
+            "date": datetime.date.today(),
+            "fruit": "apple",
+            "amount": 1000,
+            "price": 1.5,
+        })
+        self.assertTrue(form.is_valid())
 
     def test_form_accepts_correct_data(self):
-        # TODO implement
-        pass
+        form = HarvestForm(data={
+            "date": datetime.date.today(),
+            "fruit": "apple",
+            "amount": 1000,
+            "price": 1.5,
+        })
+        self.assertTrue(form.is_valid())
 
-    def test_form_rejects_invalid_data(self):
-        # TODO implement
-        pass
+    def test_form_rejects_amount_out_of_bounds(self):
+        form = HarvestForm(data={
+            "date": datetime.date.today(),
+            "fruit": "apple",
+            "amount": 10000000,
+            "price": 1.5,
+        })
+        self.assertFalse(form.is_valid())
+
+        form = HarvestForm(data={
+            "date": datetime.date.today(),
+            "fruit": "apple",
+            "amount": 1000,
+            "price": 1.546875,
+        })
+        self.assertFalse(form.is_valid())
+
+        form = HarvestForm(data={
+            "date": datetime.date.today(),
+            "fruit": "apple",
+            "amount": 1000,
+            "price": 1111.1,
+        })
+        self.assertFalse(form.is_valid())
 
 
 class IndexViewTests(TestCase):
