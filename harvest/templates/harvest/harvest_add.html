@@ -1,36 +1,63 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block head %}
     <title>Add new Harvest</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'harvest/style.css' %}">
 {% endblock %}
 
 {% block content %}
-    <form action="" method="POST">
-        {% csrf_token %}
-        {{ form.date.label }}
-        {{ form.date }}
-        <br>
+    <nav class="navbar">
+        <div class="nav-container">
+            <p><i class="fa-solid fa-apple-whole"></i> Harvests</p>
+            <ul>
+                <li><a href="">Dashboard</a></li>
+                <li><a href="">Harvest List</a></li>
+                <li><a href="">Add Harvest</a></li>
+                <li><a href="">Log Out</a></li>
+            </ul>
+        </div>
+    </nav>
 
-        {{ form.fruit.label }}
-        {{ form.fruit }}
-        <br>
+    <div id="create-container">
+        <h3>Add new Harvest</h3>
 
-        {{ form.amount.label }}
-        {{ form.amount }}
-        <br>
+        <form action="" method="POST">
+            {% csrf_token %}
 
-        {{ form.price.label }}
-        {{ form.price }}
-        <br>
+            <div class="form-wrap">
+                <p>{{ form.date.label }}</p>
+                {{ form.date }}
+                <br>
+            </div>
 
-        <a class="btn-1">Go back</a>
-        <button type="submit" class="btn-1">Add</button>
+            <div class="form-wrap">
+                <p>{{ form.fruit.label }}</p>
+                {{ form.fruit }}
+                <br>
+            </div>
 
-        {% if form.errors %}
-            {% for v in form.errors.values %}
-            <p id="password-error">{{ v }}</p>
-            {% endfor %}
-        {% endif %}
-    </form>
 
+            <div class="form-wrap">
+                <p>{{ form.amount.label }}</p>
+                {{ form.amount }}
+                <br>
+            </div>
+
+            <div class="form-wrap">
+                <p>{{ form.price.label }}</p>
+                {{ form.price }}
+                <br>
+            </div>
+
+            <a class="btn-1">Go back</a>
+            <button type="submit" class="btn-1">Add</button>
+
+            {% if form.errors %}
+                {% for v in form.errors.values %}
+                <p id="password-error">{{ v }}</p>
+                {% endfor %}
+            {% endif %}
+        </form>
+    </div>
 {% endblock %}

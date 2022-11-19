@@ -18,17 +18,23 @@ a {
 }
 
 .navbar {
-    height: 80px;
     background-color: #52734D;
     color: #FEFFDE;
     font-size: 36px;
+    overflow: auto;
+}
+
+.nav-container {
+    margin: auto;
+    max-width: 1920px;
+    overflow: auto;
+    padding: 0 20px;
 }
 
 .navbar p {
-    text-align: center;
+    padding: 20px;
     float: left;
-    padding-top: 20px;
-    padding-left: 60px;
+    text-align: center;
 }
 
 .navbar ul {
@@ -47,7 +53,21 @@ a {
     text-align: center;
 }
 
+.navbar ul li a:hover {
+    background-color: #91C788;
+}
+
 #edit-container {
+    padding: 20px;
+    margin: 60px auto;
+    background-color: #91C788;
+    max-width: 600px;
+    text-align: center;
+    border: #52734D 10px solid;
+    border-radius: 10px;
+}
+
+#create-container {
     padding: 20px;
     margin: 60px auto;
     background-color: #91C788;
