@@ -104,7 +104,16 @@ class HarvestTests(TestCase):
 
         with self.assertRaises(IntegrityError) as test_context:
             test_harvest2_edit.save()
+
         self.assertTrue("UNIQUE constraint failed", str(test_context.exception))
+
+    def test_harvest_value_property_correct(self):
+        test_harvest1 = Harvest(fruit="cherry",
+                                date=datetime.date.today(),
+                                amount=222,
+                                price=10,
+                                owner=self.user)
+        self.assertEqual(2220, test_harvest1.value)
 
 
 class HarvestFormTests(TestCase):
