@@ -5,11 +5,22 @@ from django.db import IntegrityError
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.test.utils import setup_test_environment
-from django.urls import reverse
+from django.urls import reverse, resolve
 
 from . import views
 from .models import Harvest
 from .forms import HarvestForm
+
+
+class UrlsTests(TestCase):
+    """Tests for url routes"""
+
+    def test_urls_resolve(self):
+        self.assertEqual(resolve(reverse("harvest:home")).func, views.index)
+        self.assertEqual(resolve(reverse("harvest:harvest-list")).func, views.harvest_list)
+        self.assertEqual(resolve(reverse("harvest:harvest-add")).func, views.harvest_add)
+        self.assertEqual(resolve(reverse("harvest:harvest-edit")).func, views.harvest_edit)
+        self.assertEqual(resolve(reverse("harvest:harvest-delete")).func, views.harvest_delete)
 
 
 class HarvestTests(TestCase):
