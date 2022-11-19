@@ -24,6 +24,8 @@ class Harvest(models.Model):
                              max_length=15, choices=FRUITS,
                              null=False, default='"raspberry')
 
+    fruit = models.TextChoices
+
     amount = models.IntegerField(verbose_name="Amount harvested",
                                  validators=[MinValueValidator(10),
                                              MaxValueValidator(5000)]

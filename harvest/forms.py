@@ -28,10 +28,14 @@ class HarvestForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(HarvestForm, self).__init__(*args, **kwargs)
-        self.fields['date'].widget.attrs.update({"class": "harvest-date"})
-        self.fields['fruit'].widget.attrs.update({"class": "harvest-fruit"})
-        self.fields['amount'].widget.attrs.update({"class": "harvest-amount"})
-        self.fields['price'].widget.attrs.update({"class": "harvest-price"})
+        self.fields['date'].widget.attrs.update({"class": "harvest-date",
+                                                 "required": "required"})
+        self.fields['fruit'].widget.attrs.update({"class": "harvest-fruit",
+                                                  "required": "required"})
+        self.fields['amount'].widget.attrs.update({"class": "harvest-amount",
+                                                   "required": "required"})
+        self.fields['price'].widget.attrs.update({"class": "harvest-price",
+                                                  "required": "required"})
 
 
 class CustomSignupForm(UserCreationForm):
