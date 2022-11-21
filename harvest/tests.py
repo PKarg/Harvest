@@ -19,7 +19,7 @@ class UrlsTests(TestCase):
         self.assertEqual(resolve(reverse("harvest:home")).func, views.index)
         self.assertEqual(resolve(reverse("harvest:harvest-list")).func, views.harvest_list)
         self.assertEqual(resolve(reverse("harvest:harvest-add")).func, views.harvest_add)
-        self.assertEqual(resolve(reverse("harvest:harvest-edit")).func, views.harvest_edit)
+        self.assertEqual(resolve(reverse("harvest:harvest-edit", args=[1])).func, views.harvest_edit)
         self.assertEqual(resolve(reverse("harvest:harvest-delete")).func, views.harvest_delete)
 
 
@@ -138,7 +138,7 @@ class HarvestFormTests(TestCase):
             "date": datetime.date.today(),
             "fruit": "kasztan",
             "amount": 1000,
-            "price": 1.5,})
+            "price": 1.5})
         self.assertFalse(form.is_valid())
 
     def test_form_rejects_incomplete_data(self):
@@ -189,20 +189,96 @@ class IndexViewTests(TestCase):
     # TODO implement
     pass
 
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
 
-class HarvestCreateViewTests(TestCase):
-    # TODO implement
-    pass
+
+class HarvestAddViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        self.client = Client()
+
+        Harvest.objects.create(date=datetime.date.today(),
+                               fruit="cherry",
+                               owner=self.user,
+                               price=10,
+                               amount=100)
+
+    def test_unauthorized_has_no_access(self):
+        response = self.client.get(reverse("harvest:harvest-add"))
+
+        self.assertTrue("login" in response.url)
+        self.assertEquals(response.status_code, 302)
+
+    def test_authorized_user_has_access(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        response = self.client.get(reverse("harvest:harvest-add"))
+
+        self.assertEquals(response.status_code, 200)
+
+    def test_authorized_user_creates_harvest(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        response = self.client.post(reverse("harvest:harvest-add"), data={
+            "date": datetime.date.today(),
+            "fruit": "cherry",
+            "amount": 100,
+            "price": 10
+        })
+
+        self.assertTrue("harvest/list" in response.url)
+        self.assertEquals(response.status_code, 302)
+        self.assertTemplateUsed("harvest/add")
+
+    def test_authorized_user_creates_harvest_bad_data(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        response = self.client.post(reverse("harvest:harvest-add"), data={
+            "date": datetime.date(1900, 1, 1),
+            "fruit": "cherry",
+            "amount": 10000000,
+            "price": 100
+        })
+
+        self.assertContains(response, "Earliest accepted harvest year")
+        self.assertContains(response, "2 digits")
+        self.assertContains(response, "or equal to 5000")
+        self.assertEquals(response.status_code, 200)
+
+    def test_authorized_user_creates_harvest_empty_data(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        with self.assertRaises(KeyError) as test_context:
+            response = self.client.post(reverse("harvest:harvest-add"), data={})
+            self.assertEquals(response.status_code, 200)
+            self.assertEquals(len(Harvest.objects.all()), 1)
 
 
 class HarvestEditViewTests(TestCase):
     # TODO implement
     pass
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+
+    def test_unauthorized_has_no_access(self):
+        pass
 
 
 class HarvestDeleteViewTests(TestCase):
     # TODO implement
     pass
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+
+    def test_unauthorized_has_no_access(self):
+        pass
+
+
+class HarvestListViewTests(TestCase):
+    pass
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+
+    def test_unauthorized_has_no_access(self):
+        pass
 
 
 class CustomCommandDeleteHarvestTests(TestCase):
