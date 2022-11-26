@@ -35,7 +35,7 @@ class Harvest(models.Model):
                                 validators=[MinValueValidator(decimal.Decimal("0.1")),
                                             MaxValueValidator(decimal.Decimal("50.0"))])
 
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
 
     class Meta:
         ordering = ["date"]

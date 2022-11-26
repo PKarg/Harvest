@@ -129,8 +129,11 @@ class HarvestTests(TestCase):
 
 class HarvestFormTests(TestCase):
 
+    def setUP(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+
     def test_form_rejects_no_data(self):
-        form = HarvestForm(data={})
+        form = HarvestForm(data={}, owner=self.user)
         self.assertRaises(KeyError)
 
     def test_form_rejects_fruit_outside_choice(self):
@@ -138,7 +141,8 @@ class HarvestFormTests(TestCase):
             "date": datetime.date.today(),
             "fruit": "kasztan",
             "amount": 1000,
-            "price": 1.5})
+            "price": 1.5},
+            owner=self.user)
         self.assertFalse(form.is_valid())
 
     def test_form_rejects_incomplete_data(self):
@@ -147,7 +151,7 @@ class HarvestFormTests(TestCase):
             "fruit": "apple",
             "amount": 1000,
             "price": 1.5,
-        })
+        }, owner=self.user)
         self.assertTrue(form.is_valid())
 
     def test_form_accepts_correct_data(self):
@@ -156,7 +160,7 @@ class HarvestFormTests(TestCase):
             "fruit": "apple",
             "amount": 1000,
             "price": 1.5,
-        })
+        }, owner=self.user)
         self.assertTrue(form.is_valid())
 
     def test_form_rejects_amount_out_of_bounds(self):
@@ -165,7 +169,7 @@ class HarvestFormTests(TestCase):
             "fruit": "apple",
             "amount": 10000000,
             "price": 1.5,
-        })
+        }, owner=self.user)
         self.assertFalse(form.is_valid())
 
         form = HarvestForm(data={
@@ -173,7 +177,7 @@ class HarvestFormTests(TestCase):
             "fruit": "apple",
             "amount": 1000,
             "price": 1.546875,
-        })
+        }, owner=self.user)
         self.assertFalse(form.is_valid())
 
         form = HarvestForm(data={
@@ -181,7 +185,7 @@ class HarvestFormTests(TestCase):
             "fruit": "apple",
             "amount": 1000,
             "price": 1111.1,
-        })
+        }, owner=self.user)
         self.assertFalse(form.is_valid())
 
 
@@ -220,13 +224,26 @@ class HarvestAddViewTests(TestCase):
         self.client.login(username="testeruser", password="testeruserpass")
         response = self.client.post(reverse("harvest:harvest-add"), data={
             "date": datetime.date.today(),
+            "fruit": "strawberry",
+            "amount": 100,
+            "price": 10
+        })
+
+        self.assertEquals(response.status_code, 301)
+        self.assertTrue("harvest/list" in response.url)
+        self.assertTemplateUsed("harvest/add")
+
+    def test_authorized_user_creates_harvest_duplicate_rejected(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        response = self.client.post(reverse("harvest:harvest-add"), data={
+            "date": datetime.date.today(),
             "fruit": "cherry",
             "amount": 100,
             "price": 10
         })
 
-        self.assertTrue("harvest/list" in response.url)
-        self.assertEquals(response.status_code, 302)
+        self.assertContains(response, "already exists")
+        self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed("harvest/add")
 
     def test_authorized_user_creates_harvest_bad_data(self):
@@ -242,6 +259,7 @@ class HarvestAddViewTests(TestCase):
         self.assertContains(response, "2 digits")
         self.assertContains(response, "or equal to 5000")
         self.assertEquals(response.status_code, 200)
+        self.assertTemplateUsed("harvest/add")
 
     def test_authorized_user_creates_harvest_empty_data(self):
         self.client.login(username="testeruser", password="testeruserpass")
@@ -249,16 +267,111 @@ class HarvestAddViewTests(TestCase):
             response = self.client.post(reverse("harvest:harvest-add"), data={})
             self.assertEquals(response.status_code, 200)
             self.assertEquals(len(Harvest.objects.all()), 1)
+            self.assertTemplateUsed("harvest/add")
 
 
 class HarvestEditViewTests(TestCase):
-    # TODO implement
-    pass
     def setUp(self):
         self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        self.user2 = User.objects.create_user(username="testeruser2", password="testeruserpass2")
+        self.test_harvest = Harvest(fruit="cherry",
+                               date=datetime.date.today(),
+                               amount=222,
+                               price=10,
+                               owner=self.user)
+        self.test_harvest.save()
+        self.test_harvest2 = Harvest(fruit="strawberry",
+                                    date=datetime.date.today(),
+                                    amount=222,
+                                    price=10,
+                                    owner=self.user)
+        self.test_harvest2.save()
 
     def test_unauthorized_has_no_access(self):
-        pass
+        response = self.client.get(f"/harvest/edit/{self.test_harvest.pk}")
+        print(response.url)
+        self.assertEquals(response.status_code, 302)
+        self.assertTrue("login" in response.url)
+
+    def test_user_is_not_an_owner(self):
+        self.client.login(username="testeruser2", password="testeruserpass2")
+        response = self.client.get(f"/harvest/edit/{self.test_harvest.pk}")
+        self.assertEquals(response.status_code, 404)
+
+    def test_harvest_not_existing(self):
+        self.client.login(username="testeruser2", password="testeruserpass2")
+        response = self.client.get(f"/harvest/edit/7")
+        self.assertEquals(response.status_code, 404)
+
+    def test_harvest_exists_correct_initial_data_from_get(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        response = self.client.get(f"/harvest/edit/{self.test_harvest.id}")
+        self.assertEquals(response.status_code, 200)
+        self.assertContains(response, "Cherry")
+
+    def test_harvest_edit_post_correct_data(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        start_harvest_count = Harvest.objects.count()
+        response = self.client.post(path=f"/harvest/edit/{self.test_harvest.id}",
+                                    data={
+                                        "date": self.test_harvest.date,
+                                        "price": 7,
+                                        "fruit": self.test_harvest.fruit,
+                                        "amount": 327
+                                    })
+        harvests = Harvest.objects.all()
+        print(response.content)
+        self.assertEquals(response.status_code, 301)
+        self.assertEquals(start_harvest_count, len(harvests))
+        self.assertEquals(harvests[0].price, 7)
+        self.assertEquals(harvests[0].amount, 327)
+
+    def test_harvest_edit_post_duplicate_detected(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        start_harvest_count = Harvest.objects.count()
+        response = self.client.post(path=f"/harvest/edit/{self.test_harvest2.id}",
+                                    data={
+                                        "date": self.test_harvest.date,
+                                        "price": self.test_harvest.price,
+                                        "fruit": self.test_harvest.fruit,
+                                        "amount": self.test_harvest.amount
+                                    })
+        harvests = Harvest.objects.all()
+        self.assertEquals(response.status_code, 200)
+        self.assertContains(response, "already exists")
+        self.assertEquals(start_harvest_count, len(harvests))
+
+    def test_harvest_edit_post_invalid_data(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        start_harvest_count = Harvest.objects.count()
+        response = self.client.post(path=f"/harvest/edit/{self.test_harvest2.id}",
+                                    data={
+                                        "date": datetime.date(1990, 10, 12),
+                                        "price": 10000,
+                                        "fruit": "raspberry",
+                                        "amount": 1000000,
+                                    })
+
+        harvests = Harvest.objects.all()
+        self.assertContains(response, "Earliest")
+        self.assertContains(response, "4 digits")
+        self.assertContains(response, "higher than 5000")
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(start_harvest_count, len(harvests))
+
+    def test_harvest_edit_incomplete_data(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        start_harvest_count = Harvest.objects.count()
+        response = self.client.post(path=f"/harvest/edit/{self.test_harvest2.id}",
+                                    data={
+                                        "date": datetime.date(2018, 10, 12),
+                                        "amount": 1000000,
+                                    })
+
+        harvests = Harvest.objects.all()
+        self.assertEquals(response.status_code, 200)
+        self.assertContains(response, "be empty")
+        self.assertEquals(start_harvest_count, len(harvests))
 
 
 class HarvestDeleteViewTests(TestCase):

@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomSignupForm, HarvestForm
 from .models import Harvest
 
+
 def index(request: HttpRequest):
     """Homepage view displaying seasonal summary and 5 last harvests"""
     # TODO implement
@@ -42,13 +43,17 @@ def harvest_list(request: HttpRequest):
 @login_required
 def harvest_add(request: HttpRequest):
     """View for adding new harvests"""
-    form = HarvestForm()
+    form = HarvestForm(request.user)
 
     if request.method == "POST":
-        form = HarvestForm(request.POST)
+        form = HarvestForm(request.user, **request.POST)
         if form.is_valid():
-            form.save(commit=True)
-            return redirect(reverse("harvest:harvest-list"))
+            data = form.cleaned_data
+            harvest = Harvest(owner=form.owner, fruit=data['fruit'],
+                              date=data['date'], amount=data['amount'],
+                              price=data['price'])
+            harvest.save()
+            return redirect(reverse("harvest:harvest-list"), permanent=True)
 
     return render(request,
                   template_name="harvest/harvest_add.html",
@@ -58,11 +63,14 @@ def harvest_add(request: HttpRequest):
 @login_required
 def harvest_edit(request: HttpRequest, pk: int):
     """View for editing data of specific harvest"""
-    harvest = get_object_or_404(Harvest, id=pk)
-    form = HarvestForm(instance=harvest)
+    harvest = get_object_or_404(Harvest, pk=pk)
+    if request.user.username != harvest.owner.username:
+        raise Http404()
+    form = HarvestForm(instance=harvest, owner=harvest.owner)
 
     if request.method == "POST":
-        form = HarvestForm(request.POST)
+        form = HarvestForm(request.user, pk, request.POST)
+        print(form.errors)
 
         if form.is_valid():
             data = form.cleaned_data
@@ -70,8 +78,9 @@ def harvest_edit(request: HttpRequest, pk: int):
             harvest.price = data.get("price")
             harvest.fruit = data.get("fruit")
             harvest.amount = data.get("amount")
+            harvest.owner = form.owner
             harvest.save()
-            return redirect(reverse("harvest:harvest-list"))
+            return redirect(reverse("harvest:harvest-list"), permanent=True)
 
     return render(request,
                   template_name="harvest/harvest_edit.html",
