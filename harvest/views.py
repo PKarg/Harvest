@@ -12,7 +12,9 @@ from .models import Harvest
 def index(request: HttpRequest):
     """Homepage view displaying seasonal summary and 5 last harvests"""
     # TODO implement
-    return HttpResponse("Home")
+    return render(request,
+                  template_name="harvest/index.html",
+                  context={})
 
 
 def sign_up(request: HttpRequest):
@@ -37,7 +39,9 @@ def sign_up(request: HttpRequest):
 def harvest_list(request: HttpRequest):
     """View for listing user harvests with pagination and filtering by year and fruit"""
     # TODO implement
-    return HttpResponse("Harvest list")
+    return render(request,
+                  template_name="harvest/harvest_list.html",
+                  context={})
 
 
 @login_required
@@ -63,11 +67,11 @@ def harvest_add(request: HttpRequest):
 @login_required
 def harvest_edit(request: HttpRequest, pk: int):
     """View for editing data of specific harvest"""
-    harvest = get_object_or_404(Harvest, pk=pk)
-    if request.user.username != harvest.owner.username:
-        raise Http404()
-    form = HarvestForm(instance=harvest, owner=harvest.owner)
+    harvest = Harvest.objects.filter(pk=pk).filter(owner=request.user).first()
+    if not harvest:
+        raise Http404("Harvest not found")
 
+    form = HarvestForm(instance=harvest, owner=harvest.owner)
     if request.method == "POST":
         form = HarvestForm(request.user, pk, request.POST)
         print(form.errors)
@@ -88,7 +92,16 @@ def harvest_edit(request: HttpRequest, pk: int):
 
 
 @login_required
-def harvest_delete(request: HttpRequest):
+def harvest_delete(request: HttpRequest, pk: int):
     """View for deleting specified harvest"""
-    # TODO implement
-    return HttpResponse("Harvest delete")
+    harvest = Harvest.objects.filter(pk=pk).filter(owner=request.user).first()
+    if not harvest:
+        raise Http404("Harvest not found")
+
+    if request.method == "POST":
+        harvest.delete()
+        return redirect(reverse("harvest:harvest-list"), permanent=True)
+
+    return render(request,
+                  template_name="harvest/harvest_delete.html",
+                  context={"harvest": harvest})

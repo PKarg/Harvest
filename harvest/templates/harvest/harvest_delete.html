@@ -1,9 +1,33 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block head %}
     <title>Delete Harvest</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'harvest/style.css' %}">
 {% endblock %}
 
 {% block content %}
-    
+    <nav class="navbar">
+        <div class="nav-menu">
+            <p><i class="fa-solid fa-apple-whole"></i> Harvests</p>
+            <ul>
+                <li><a href="{% url 'harvest:home' %}">Dashboard</a></li>
+                <li><a href="{% url 'harvest:harvest-list' %}">Harvest List</a></li>
+                <li><a href="{% url 'harvest:harvest-add' %}">Add Harvest</a></li>
+                <li><a href={% url 'logout' %}"">Log Out</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="delete-container">
+        <h3>Are you sure you want to delete Harvest {{ harvest }}?</h3>
+        <form action="" method="POST">
+            {% csrf_token %}
+
+            <a class="btn-1" href="{% url 'harvest:harvest-edit' pk=harvest.pk %}">Go back</a>
+            <button type="submit" class="btn-1">Delete</button>
+        </form>
+    </div>
+
+    <div class="footer"></div>
 {% endblock %}

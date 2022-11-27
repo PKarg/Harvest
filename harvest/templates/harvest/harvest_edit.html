@@ -11,15 +11,21 @@
         <div class="nav-menu">
             <p><i class="fa-solid fa-apple-whole"></i> Harvests</p>
             <ul>
-                <li><a href="">Dashboard</a></li>
-                <li><a href="">Harvest List</a></li>
-                <li><a href="">Add Harvest</a></li>
-                <li><a href="">Log Out</a></li>
+                <li><a href="{% url 'harvest:home' %}">Dashboard</a></li>
+                <li><a href="{% url 'harvest:harvest-list' %}">Harvest List</a></li>
+                <li><a href="{% url 'harvest:harvest-add' %}">Add Harvest</a></li>
+                <li><a href={% url 'logout' %}>Log Out</a></li>
             </ul>
         </div>
     </nav>
 
     <div id="edit-container">
+        <span id="icon-trash">
+            <a href="{% url 'harvest:harvest-delete' pk=harvest.id  %}">
+                <i id="delete-harvest" class="fa-solid fa-trash-can"></i>
+            </a>
+        </span>
+
         <h3>Edit Harvest: {{ harvest }}</h3>
         <form action="" method="POST">
             {% csrf_token %}

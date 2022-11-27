@@ -15,6 +15,7 @@ body {
 
 a {
     text-decoration: none;
+    color: #000;
 }
 
 .navbar {
@@ -67,6 +68,16 @@ a {
     border-radius: 10px;
 }
 
+#delete-container {
+    padding: 20px;
+    margin: 180px auto;
+    background-color: #91C788;
+    max-width: 600px;
+    text-align: center;
+    border: #52734D 10px solid;
+    border-radius: 10px;
+}
+
 #create-container {
     padding: 20px;
     margin: 60px auto;
@@ -84,6 +95,14 @@ a {
 #edit-container form {
     max-width: 100%;
 }
+
+#icon-trash {
+    display: block;
+    text-align: right;
+    font-size: 24px;
+
+}
+
 
 .form-wrap {
     font-size: 16px;

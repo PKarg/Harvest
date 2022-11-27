@@ -8,13 +8,13 @@
 
 {% block content %}
     <nav class="navbar">
-        <div class="nav-container">
+        <div class="nav-menu">
             <p><i class="fa-solid fa-apple-whole"></i> Harvests</p>
             <ul>
-                <li><a href="">Dashboard</a></li>
-                <li><a href="">Harvest List</a></li>
-                <li><a href="">Add Harvest</a></li>
-                <li><a href="">Log Out</a></li>
+                <li><a href="{% url 'harvest:home' %}">Dashboard</a></li>
+                <li><a href="{% url 'harvest:harvest-list' %}">Harvest List</a></li>
+                <li><a href="{% url 'harvest:harvest-add' %}">Add Harvest</a></li>
+                <li><a href={% url 'logout' %}>Log Out</a></li>
             </ul>
         </div>
     </nav>
