@@ -20,7 +20,7 @@ class UrlsTests(TestCase):
         self.assertEqual(resolve(reverse("harvest:harvest-list")).func, views.harvest_list)
         self.assertEqual(resolve(reverse("harvest:harvest-add")).func, views.harvest_add)
         self.assertEqual(resolve(reverse("harvest:harvest-edit", args=[1])).func, views.harvest_edit)
-        self.assertEqual(resolve(reverse("harvest:harvest-delete")).func, views.harvest_delete)
+        self.assertEqual(resolve(reverse("harvest:harvest-delete", args=[1])).func, views.harvest_delete)
 
 
 class HarvestTests(TestCase):
@@ -129,11 +129,11 @@ class HarvestTests(TestCase):
 
 class HarvestFormTests(TestCase):
 
-    def setUP(self):
+    def setUp(self):
         self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
 
     def test_form_rejects_no_data(self):
-        form = HarvestForm(data={}, owner=self.user)
+        HarvestForm(owner=self.user, h_id=None, data={})
         self.assertRaises(KeyError)
 
     def test_form_rejects_fruit_outside_choice(self):
@@ -255,19 +255,17 @@ class HarvestAddViewTests(TestCase):
             "price": 100
         })
 
-        self.assertContains(response, "Earliest accepted harvest year")
         self.assertContains(response, "2 digits")
-        self.assertContains(response, "or equal to 5000")
+        self.assertContains(response, "higher than 5000")
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed("harvest/add")
 
     def test_authorized_user_creates_harvest_empty_data(self):
         self.client.login(username="testeruser", password="testeruserpass")
-        with self.assertRaises(KeyError) as test_context:
-            response = self.client.post(reverse("harvest:harvest-add"), data={})
-            self.assertEquals(response.status_code, 200)
-            self.assertEquals(len(Harvest.objects.all()), 1)
-            self.assertTemplateUsed("harvest/add")
+        response = self.client.post(reverse("harvest:harvest-add"), data={})
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(len(Harvest.objects.all()), 1)
+        self.assertTemplateUsed("harvest/add")
 
 
 class HarvestEditViewTests(TestCase):
@@ -289,7 +287,6 @@ class HarvestEditViewTests(TestCase):
 
     def test_unauthorized_has_no_access(self):
         response = self.client.get(f"/harvest/edit/{self.test_harvest.pk}")
-        print(response.url)
         self.assertEquals(response.status_code, 302)
         self.assertTrue("login" in response.url)
 
@@ -320,7 +317,6 @@ class HarvestEditViewTests(TestCase):
                                         "amount": 327
                                     })
         harvests = Harvest.objects.all()
-        print(response.content)
         self.assertEquals(response.status_code, 301)
         self.assertEquals(start_harvest_count, len(harvests))
         self.assertEquals(harvests[0].price, 7)
@@ -346,16 +342,31 @@ class HarvestEditViewTests(TestCase):
         start_harvest_count = Harvest.objects.count()
         response = self.client.post(path=f"/harvest/edit/{self.test_harvest2.id}",
                                     data={
-                                        "date": datetime.date(1990, 10, 12),
+                                        "date": datetime.date(1987, 10, 12),
                                         "price": 10000,
                                         "fruit": "raspberry",
-                                        "amount": 1000000,
+                                        "amount": 10000,
+                                    })
+
+        harvests = Harvest.objects.all()
+        self.assertContains(response, "4 digits")
+        self.assertContains(response, "higher than 5000")
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(start_harvest_count, len(harvests))
+
+    def test_harvest_edit_post_invalid_date(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        start_harvest_count = Harvest.objects.count()
+        response = self.client.post(path=f"/harvest/edit/{self.test_harvest2.id}",
+                                    data={
+                                        "date": datetime.date(1987, 10, 12),
+                                        "price": 10,
+                                        "fruit": "raspberry",
+                                        "amount": 100,
                                     })
 
         harvests = Harvest.objects.all()
         self.assertContains(response, "Earliest")
-        self.assertContains(response, "4 digits")
-        self.assertContains(response, "higher than 5000")
         self.assertEquals(response.status_code, 200)
         self.assertEquals(start_harvest_count, len(harvests))
 
@@ -375,13 +386,38 @@ class HarvestEditViewTests(TestCase):
 
 
 class HarvestDeleteViewTests(TestCase):
-    # TODO implement
-    pass
+
     def setUp(self):
+
         self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        self.user2 = User.objects.create_user(username="testeruser2", password="testeruserpass2")
+        self.test_harvest = Harvest(fruit="cherry",
+                                    date=datetime.date.today(),
+                                    amount=222,
+                                    price=10,
+                                    owner=self.user)
+        self.test_harvest.save()
 
     def test_unauthorized_has_no_access(self):
-        pass
+        response = self.client.post(path=f"/harvest/delete/{self.test_harvest.pk}")
+        self.assertEquals(response.status_code, 302)
+
+    def test_not_owner_gets_404(self):
+        self.client.login(username="testeruser2", password="testeruserpass2")
+        response = self.client.post(path=f"/harvest/delete/{self.test_harvest.pk}")
+        self.assertEquals(response.status_code, 404)
+
+    def test_owner_can_delete(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        response = self.client.post(path=f"/harvest/delete/{self.test_harvest.pk}")
+        harvests = Harvest.objects.all()
+        self.assertEquals(response.status_code, 301)
+        self.assertEquals(len(harvests), 0)
+
+    def test_harvest_not_exists_404(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        response = self.client.post(path=f"/harvest/delete/{2}")
+        self.assertEquals(response.status_code, 404)
 
 
 class HarvestListViewTests(TestCase):

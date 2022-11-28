@@ -23,8 +23,9 @@ class HarvestForm(forms.ModelForm):
 
         error_messages = {
             "date": {
-                "invalid": "Harvest date has to be at least in year 1997"
+                "invalid": "Earliest accepted harvest year is 1997"
             },
+
             "price": {
                 "max_digits": "Price can have no more than 4 digits, including 2 decimal places",
                 "max_decimal_places": "Price can have max 2 decimal places",

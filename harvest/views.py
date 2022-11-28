@@ -25,6 +25,7 @@ def sign_up(request: HttpRequest):
         if form.is_valid():
             form.save()
             return redirect(reverse("login"))
+
     else:
         form = CustomSignupForm()
         error_msg = None
@@ -50,7 +51,7 @@ def harvest_add(request: HttpRequest):
     form = HarvestForm(request.user)
 
     if request.method == "POST":
-        form = HarvestForm(request.user, **request.POST)
+        form = HarvestForm(request.user, None, request.POST)
         if form.is_valid():
             data = form.cleaned_data
             harvest = Harvest(owner=form.owner, fruit=data['fruit'],
@@ -74,7 +75,6 @@ def harvest_edit(request: HttpRequest, pk: int):
     form = HarvestForm(instance=harvest, owner=harvest.owner)
     if request.method == "POST":
         form = HarvestForm(request.user, pk, request.POST)
-        print(form.errors)
 
         if form.is_valid():
             data = form.cleaned_data
