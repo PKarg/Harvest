@@ -52,3 +52,7 @@ class Harvest(models.Model):
 
     def get_absolute_url(self):
         return reverse('harvests:edit', kwargs={"pk": self.pk})
+
+    @property
+    def profits(self):
+        return self.price * self.amount

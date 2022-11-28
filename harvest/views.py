@@ -1,5 +1,6 @@
 import traceback
 
+from django.core.paginator import Paginator
 from django.http import HttpRequest, HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -39,10 +40,37 @@ def sign_up(request: HttpRequest):
 @login_required
 def harvest_list(request: HttpRequest):
     """View for listing user harvests with pagination and filtering by year and fruit"""
-    # TODO implement
+    harvests = Harvest.objects.filter(owner=request.user)
+    fruit = request.GET.get(key="fruit")
+
+    if fruit and fruit != "all":
+        harvests = harvests.filter(fruit=fruit)
+
+    harvests_n = len(harvests)
+    limit = int(request.GET.get(key="harvests-per-page", default=5))
+
+    paginator = Paginator(harvests, per_page=limit)
+    page_number = request.GET.get(key="page", default=1)
+    page_obj = paginator.get_page(page_number)
+    print(page_number)
+
+    fields = {"fruit": "Fruit",
+              "date": "Date",
+              "amount": "Harvested",
+              "price": "Price",
+              "profits": "Profits"}
+
     return render(request,
                   template_name="harvest/harvest_list.html",
-                  context={})
+                  context={
+                      "fields": fields,
+                      "limit": limit,
+                      "fruit": fruit,
+                      "user": request.user,
+                      "harvests_n": harvests_n,
+                      "page_obj": page_obj,
+                      "harvests": page_obj.object_list
+                  })
 
 
 @login_required

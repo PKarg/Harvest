@@ -94,6 +94,7 @@ a {
 
 #edit-container form {
     max-width: 100%;
+    padding-bottom: 20px;
 }
 
 #icon-trash {
@@ -103,6 +104,89 @@ a {
 
 }
 
+#table-container {
+    font-size: 18px;
+    background-color: #52734D;
+    border-radius: 10px;
+    margin: 60px auto;
+    max-width: 1200px;
+    text-align: center;
+    border: #000 solid 1px;
+}
+
+#tab-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #FEFFDE;
+    margin: 10px 10px;
+}
+
+#tab {
+    width: 100%;
+    text-align: center;
+    border-collapse: collapse;
+    background-color: #FEFFDE;
+}
+
+#tab tr {
+    height: 20px;
+}
+
+#tab th {
+}
+
+#tab td{
+    border: #000 solid 1px;
+}
+
+#tab #tab-header {
+    background-color: #91C788;
+}
+
+#tab-footer {
+    background-color: #91C788;
+}
+
+.pagination {
+    padding: 10px 25px;
+    text-align: right;
+}
+
+.pagination form {
+    display: inline;
+}
+
+#page-limit {
+    margin: 10px;
+}
+
+#harvests-per-page {
+    display: inline;
+    background: none;
+    max-width: 100px;
+    height: 30px;
+}
+
+#fruit {
+    margin: 10px;
+}
+
+#fruit-sel {
+    display: inline;
+    background: none;
+    max-width: 100px;
+    height: 30px;
+}
+
+.step-links {
+    text-align: center;
+    display: inline;
+    margin-right: 110px;
+}
+
+.step-links a {
+    margin: 10px;
+}
 
 .form-wrap {
     font-size: 16px;

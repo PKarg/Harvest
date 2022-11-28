@@ -18,6 +18,65 @@
             </ul>
         </div>
     </nav>
-    list
-    
+
+    <div id="table-container">
+        <p id="tab-title">Your Harvests</p>
+        <table id="tab">
+            <tr id="tab-header">
+                {% for v in fields.values %}
+                    <th>{{ v }}</th>
+                {% endfor %}
+            </tr>
+            {% for h in harvests %}
+                <tr class="tab-data">
+                    <td>{{ h.fruit}}</td>
+                    <td>{{ h.date}}</td>
+                    <td>{{ h.amount}}</td>
+                    <td>{{ h.price}}</td>
+                    <td>{{ h.profits}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <div id="tab-footer">
+            <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?harvests-per-page={{ limit }}&fruit={{ fruit }}&page={{ page_obj.previous_page_number }}">
+                        <i class="fa-solid fa-circle-chevron-left"></i></a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a href="?harvests-per-page={{ limit }}&fruit={{ fruit }}&page={{ page_obj.next_page_number }}">
+                        <i class="fa-solid fa-circle-chevron-right"></i></a>
+                {% endif %}
+            </span>
+                <form method="GET">
+                    <span class="page-limit">
+                        <label for="harvests-per-page">Harvests per page:</label>
+                        <select name="harvests-per-page" id="harvests-per-page" onchange="this.form.submit()">
+                            <option value="1" {% if limit == 1 %} selected {% endif %}>1</option>
+                            <option value="2" {% if limit == 2 %} selected {% endif %}>2</option>
+                            <option value="3" {% if limit == 3 %} selected {% endif %}>3</option>
+                            <option value="4" {% if limit == 4 %} selected {% endif %}>4</option>
+                            <option value="5" {% if limit == 5 %} selected {% endif %}>5</option>
+                            <option value="6" {% if limit == 6 %} selected {% endif %}>6</option>
+                            <option value="7" {% if limit == 7 %} selected {% endif %}>7</option>
+                            <option value="8" {% if limit == 8 %} selected {% endif %}>8</option>
+                            <option value="9" {% if limit == 9 %} selected {% endif %}>9</option>
+                            <option value="10" {% if limit == 10 %} selected {% endif %}>10</option>
+                        </select>
+                    </span>
+
+                    <span id="fruit">
+                        <label for="fruit-sel">Fruit:</label>
+                        <select name="fruit" id="fruit-sel" onchange="this.form.submit()">
+                            <option value="all" {% if fruit == "all" %} selected {% endif %}>All</option>
+                            <option value="raspberry" {% if fruit == "raspberry" %} selected {% endif %}>Raspberry</option>
+                            <option value="strawberry" {% if fruit == "strawberry" %} selected {% endif %}>Strawberry</option>
+                            <option value="apple" {% if fruit == "apple" %} selected {% endif %}>Apple</option>
+                        </select>
+                    </span>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
