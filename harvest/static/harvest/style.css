@@ -153,8 +153,11 @@ a {
 }
 
 .pagination form {
-    display: inline;
+    position: relative;
+    display: inline-block;
+    width: 420px;
 }
+
 
 #page-limit {
     margin: 10px;
@@ -179,14 +182,21 @@ a {
 }
 
 .step-links {
-    text-align: center;
-    display: inline;
-    margin-right: 110px;
+    margin-right: 115px;
+    display: inline-block;
 }
 
 .step-links a {
     margin: 10px;
+    color: #000;
 }
+
+.page-inactive {
+    color: gray;
+    opacity: 0.5;
+    margin: 10px;
+}
+
 
 .form-wrap {
     font-size: 16px;

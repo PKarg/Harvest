@@ -425,10 +425,51 @@ class HarvestListViewTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        self.test_harvest = Harvest(fruit="cherry",
+                                    date=datetime.date.today(),
+                                    amount=222,
+                                    price=10,
+                                    owner=self.user)
+        self.test_harvest.save()
+
+        self.test_harvest2 = Harvest(fruit="apple",
+                                    date=datetime.date.today(),
+                                    amount=222,
+                                    price=10,
+                                    owner=self.user)
+        self.test_harvest2.save()
+
+        self.test_harvest3 = Harvest(fruit="strawberry",
+                                    date=datetime.date.today(),
+                                    amount=222,
+                                    price=10,
+                                    owner=self.user)
+        self.test_harvest3.save()
 
     def test_unauthorized_has_no_access(self):
-        pass
+        response = self.client.get(path=f"/harvest/list/")
+        self.assertEquals(response.status_code, 302)
 
+    def test_logged_in_has_access(self):
+        self.client.login(username="testeruser", password="testeruserpass",)
+        response = self.client.get(path=f"/harvest/list/")
+        self.assertEquals(response.status_code, 200)
+
+    def test_harvests_per_page(self):
+        self.client.login(username="testeruser", password="testeruserpass", )
+        response = self.client.get(path=f"/harvest/list/?harvests-per-page=1")
+        self.assertEquals(len(response.context[0]['harvests']), 1)
+
+    def test_fruit_query_parameter(self):
+        self.client.login(username="testeruser", password="testeruserpass", )
+        response = self.client.get(path=f"/harvest/list/?harvests-per-page=3&fruit=cherry")
+        self.assertEquals(len(response.context[0]['harvests']), 1)
+        self.assertEquals(response.context[0]['harvests'][0].fruit, "cherry")
+
+    def test_fruit_not_existing(self):
+        self.client.login(username="testeruser", password="testeruserpass", )
+        response = self.client.get(path=f"/harvest/list/?harvests-per-page=3&fruit=kasztan")
+        self.assertEquals(len(response.context[0]['harvests']), 0)
 
 class CustomCommandDeleteHarvestTests(TestCase):
     # TODO implement

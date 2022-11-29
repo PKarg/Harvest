@@ -52,7 +52,6 @@ def harvest_list(request: HttpRequest):
     paginator = Paginator(harvests, per_page=limit)
     page_number = request.GET.get(key="page", default=1)
     page_obj = paginator.get_page(page_number)
-    print(page_number)
 
     fields = {"fruit": "Fruit",
               "date": "Date",

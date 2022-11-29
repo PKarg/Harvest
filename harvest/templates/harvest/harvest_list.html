@@ -43,11 +43,16 @@
                 {% if page_obj.has_previous %}
                     <a href="?harvests-per-page={{ limit }}&fruit={{ fruit }}&page={{ page_obj.previous_page_number }}">
                         <i class="fa-solid fa-circle-chevron-left"></i></a>
+                {% else %}
+                    <span class="page-inactive"><i class="fa-solid fa-circle-chevron-left"></i></span>
                 {% endif %}
                 {% if page_obj.has_next %}
                     <a href="?harvests-per-page={{ limit }}&fruit={{ fruit }}&page={{ page_obj.next_page_number }}">
                         <i class="fa-solid fa-circle-chevron-right"></i></a>
+                {% else %}
+                    <span class="page-inactive"><i class="fa-solid fa-circle-chevron-right"></i></span>
                 {% endif %}
+
             </span>
                 <form method="GET">
                     <span class="page-limit">
