@@ -198,6 +198,27 @@ a {
 }
 
 
+#index-wrapper {
+    text-align: center;
+}
+
+.index-container {
+    border-radius: 10px;
+    border: #52734D 1px solid;
+    display: inline-block;
+    width: 600px;
+    background: #52734D;
+}
+
+.index-container table {
+    background: #FEFFDE;
+    width: 100%;
+}
+
+#n-har {
+    background: #FEFFDE;
+}
+
 .form-wrap {
     font-size: 16px;
     margin-top: 20px;

@@ -1,6 +1,8 @@
+import datetime
 import traceback
 
 from django.core.paginator import Paginator
+from django.db.models.functions import ExtractYear
 from django.http import HttpRequest, HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -13,9 +15,44 @@ from .models import Harvest
 def index(request: HttpRequest):
     """Homepage view displaying seasonal summary and 5 last harvests"""
     # TODO implement
+    # 5 recent harvests
+    context = {"date": datetime.date.today()}
+
+    if request.user.is_authenticated:
+        season = request.GET.get(key="season", default=datetime.date.today().year)
+
+        seasons = Harvest.objects.filter(owner=request.user)\
+            .annotate(year=ExtractYear('date')).values('year')
+
+        seasons = set([s['year'] for s in seasons])
+
+        recent_harvests = Harvest.objects.filter(owner=request.user).order_by("date").all()[:5]
+
+        # dict with season summary:
+        all_harvests = Harvest.objects.filter(date__gte=datetime.date(year=season, month=1, day=1),
+                                              owner=request.user).all()
+
+        harvested_by_fruit = {}
+        for h in all_harvests:
+            if not harvested_by_fruit.get(h.fruit):
+                harvested_by_fruit[h.fruit] = [h.amount, h.profits]
+            else:
+                harvested_by_fruit[h.fruit][0] += h.amount
+                harvested_by_fruit[h.fruit][1] += h.profits
+
+        season_summary = {
+            "n_harvests": len(all_harvests),
+            "fruit_summary": harvested_by_fruit,
+        }
+
+        context['chosen_season'] = season
+        context['recent_harvests'] = recent_harvests
+        context['season_summary'] = season_summary
+        context['seasons'] = seasons
+
     return render(request,
                   template_name="harvest/index.html",
-                  context={})
+                  context=context)
 
 
 def sign_up(request: HttpRequest):

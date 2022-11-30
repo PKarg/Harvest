@@ -19,10 +19,65 @@
         </div>
     </nav>
     hom
-    {% if user.is_authenticated%}
-        <h1>Hello {{ user.username }}</h1>
+
+    <h1>Hello {{ user.username }}</h1>
+    {% if request.user.is_authenticated %}
+        <span id="index-hello">Hello {{ user.username }} | {{ date }}</span>
+        <div id="index-wrapper">
+            <div class="index-container">
+            <span></span>
+                <table class="index-tab">
+                    <tr>
+                        <th>Date</th>
+                        <th>Fruit</th>
+                        <th>Harvested</th>
+                        <th>Price</th>
+                    </tr>
+                {% for h in recent_harvests %}
+                    <tr>
+                        <td>{{ h.date }}</td>
+                        <td>{{ h.fruit }}</td>
+                        <td>{{ h.amount }}</td>
+                        <td>{{ h.price }}</td>
+                    </tr>
+                {% endfor %}
+                </table>
+            </div>
+
+            <div class="index-container">
+                <p><span class="cs-title">Summary</span></p>
+                <div id="n-har"><p>Number of harvests: {{ season_summary.n_harvests }}</p></div>
+                <table id="sum-tab">
+                    <tr>
+                        <th>Fruit</th>
+                        <th>Total Harvested</th>
+                        <th>Total Profits</th>
+                    </tr>
+                {% for f, d in season_summary.fruit_summary.items %}
+                    <tr>
+                        <td>{{ f }}</td>
+                        <td>{{ d.0 }}</td>
+                        <td>{{ d.1 }}</td>
+                    </tr>
+                {% endfor %}
+                </table>
+
+                <div id="index-season-picker">
+                    <form method="GET">
+                        <label for="index-season">Season:</label>
+                        <select name="index-season" id="index-season">
+                            {% for season in seasons %}
+                                <option value="{{ season }}" {% if season == chosen_season %} {% endif %} selected>{{ season }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     {% else %}
-        <h1>Hello</h1>
+        <span id="index-hello">Hello {{ user.username }} | {{ date }}</span>
     {% endif %}
+
 
 {% endblock %}
