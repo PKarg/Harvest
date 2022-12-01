@@ -65,6 +65,11 @@
             font-size: 36px;
             color: #FEFFDE;
         }
+
+        #login {
+            display: block;
+            color: #52734D;
+        }
     </style>
 {% endblock %}
 
@@ -89,6 +94,7 @@
                 <br>
 
                 <button type="submit" id="signup-submit">Sign Up</button>
+                <a id="login" href="{% url 'login' %}">Already have an account? Log In</a>
             </form>
 
         {% if form.errors %}

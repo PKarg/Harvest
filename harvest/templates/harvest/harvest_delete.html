@@ -11,10 +11,16 @@
         <div class="nav-menu">
             <p><i class="fa-solid fa-apple-whole"></i> Harvests</p>
             <ul>
-                <li><a href="{% url 'harvest:home' %}">Dashboard</a></li>
-                <li><a href="{% url 'harvest:harvest-list' %}">Harvest List</a></li>
-                <li><a href="{% url 'harvest:harvest-add' %}">Add Harvest</a></li>
-                <li><a href={% url 'logout' %}"">Log Out</a></li>
+                {% if request.user.is_authenticated %}
+                    <li><a href="{% url 'harvest:home' %}">Dashboard</a></li>
+                    <li><a href="{% url 'harvest:harvest-list' %}">Harvest List</a></li>
+                    <li><a href="{% url 'harvest:harvest-add' %}">Add Harvest</a></li>
+                    <li><a href={% url 'logout' %}>Log Out</a></li>
+                {% else %}
+                    <li><a href="{% url 'harvest:home' %}">Dashboard</a></li>
+                    <li><a href="{% url 'signup' %}">Sign Up</a></li>
+                    <li><a href={% url 'login' %}>Log In</a></li>
+                {% endif %}
             </ul>
         </div>
     </nav>

@@ -11,21 +11,25 @@
         <div class="nav-menu">
             <p><i class="fa-solid fa-apple-whole"></i> Harvests</p>
             <ul>
-                <li><a href="{% url 'harvest:home' %}">Dashboard</a></li>
-                <li><a href="{% url 'harvest:harvest-list' %}">Harvest List</a></li>
-                <li><a href="{% url 'harvest:harvest-add' %}">Add Harvest</a></li>
-                <li><a href={% url 'logout' %}"">Log Out</a></li>
+                {% if request.user.is_authenticated %}
+                    <li><a href="{% url 'harvest:home' %}">Dashboard</a></li>
+                    <li><a href="{% url 'harvest:harvest-list' %}">Harvest List</a></li>
+                    <li><a href="{% url 'harvest:harvest-add' %}">Add Harvest</a></li>
+                    <li><a href={% url 'logout' %}>Log Out</a></li>
+                {% else %}
+                    <li><a href="{% url 'harvest:home' %}">Dashboard</a></li>
+                    <li><a href="{% url 'signup' %}">Sign Up</a></li>
+                    <li><a href={% url 'login' %}>Log In</a></li>
+                {% endif %}
             </ul>
         </div>
     </nav>
-    hom
 
-    <h1>Hello {{ user.username }}</h1>
     {% if request.user.is_authenticated %}
-        <span id="index-hello">Hello {{ user.username }} | {{ date }}</span>
+        <div class="index-hello">Hello {{ user.username | capfirst }} | {{ date }}</div>
         <div id="index-wrapper">
             <div class="index-container">
-            <span></span>
+                <p><span class="cs-title">Your recent harvests</span></p>
                 <table class="index-tab">
                     <tr>
                         <th>Date</th>
@@ -42,6 +46,7 @@
                     </tr>
                 {% endfor %}
                 </table>
+                <p id="index-invisible">Text</p>
             </div>
 
             <div class="index-container">
@@ -64,7 +69,7 @@
 
                 <div id="index-season-picker">
                     <form method="GET">
-                        <label for="index-season">Season:</label>
+                        <label class="cs-title" for="index-season">Season:</label>
                         <select name="index-season" id="index-season">
                             {% for season in seasons %}
                                 <option value="{{ season }}" {% if season == chosen_season %} {% endif %} selected>{{ season }}</option>
@@ -76,8 +81,7 @@
         </div>
 
     {% else %}
-        <span id="index-hello">Hello {{ user.username }} | {{ date }}</span>
+        <div class="index-hello">Hello {{ user.username }} | {{ date }}</div>
     {% endif %}
-
 
 {% endblock %}

@@ -421,7 +421,6 @@ class HarvestDeleteViewTests(TestCase):
 
 
 class HarvestListViewTests(TestCase):
-    pass
 
     def setUp(self):
         self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
