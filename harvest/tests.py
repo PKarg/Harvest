@@ -1,8 +1,10 @@
 import datetime
 import decimal
 import random
+from io import StringIO
 from typing import Union
 
+from django.core.management import call_command
 from django.db import IntegrityError
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
@@ -552,15 +554,109 @@ class CustomCommandHarvestCountTests(TestCase):
 
 
 class CustomCommandListUserHarvestTests(TestCase):
-    # TODO implement
-    pass
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        self.user2 = User.objects.create_user(username="testeruser2", password="testeruserpass2")
+        create_dummy_harvests([{"owner": self.user,
+                               "year": 2022,
+                               "fruit": "raspberry",
+                               "number_of_harvests": 6},
+                              {"owner": self.user,
+                               "year": 2021,
+                               "fruit": "cherry",
+                               "number_of_harvests": 3},
+                              {"owner": self.user,
+                               "year": 2020,
+                               "fruit": "apple",
+                               "number_of_harvests": 3}])
+
+    def test_list_user_harvests_user_doesnt_exist(self):
+        out = StringIO()
+        args = [3]
+        call_command("list_user_harvest", *args, stdout=out)
+        self.assertIn("User with given id does not exist", out.getvalue())
+
+    def test_list_user_harvests_user_has_no_harvests(self):
+        out = StringIO()
+        args = [2]
+        call_command("list_user_harvest", *args, stdout=out)
+        self.assertIn("There are no Harvests for given user", out.getvalue())
+
+    def test_list_user_harvests_user_exists(self):
+        out = StringIO()
+        args = [1]
+        call_command("list_user_harvest", *args, stdout=out)
+        self.assertIn("testeruser has 12 Harvests with specified parameters", out.getvalue())
+        self.assertIn("raspberry", out.getvalue())
+        self.assertIn("apple", out.getvalue())
+        self.assertIn("cherry", out.getvalue())
+
+    def test_list_user_harvests_filter_by_year(self):
+        out = StringIO()
+        args = [1]
+        options = {"year": 2022}
+        call_command("list_user_harvest", *args, **options, stdout=out)
+        self.assertIn("testeruser has 6 Harvests", out.getvalue())
+        self.assertIn("raspberry", out.getvalue())
+        self.assertNotIn("cherry", out.getvalue())
+        self.assertNotIn("apple", out.getvalue())
+        self.assertNotIn("strawberry", out.getvalue())
+
+    def test_list_user_harvests_filter_by_fruit(self):
+        out = StringIO()
+        args = [1]
+        options = {"fruit": "cherry"}
+        call_command("list_user_harvest", *args, **options, stdout=out)
+        self.assertIn("testeruser has 3 Harvests", out.getvalue())
+        self.assertIn("cherry", out.getvalue())
+        self.assertNotIn("apple", out.getvalue())
+        self.assertNotIn("raspberry", out.getvalue())
+        self.assertNotIn("strawberry", out.getvalue())
+
+    def test_list_user_harvests_filter_by_fruit_not_found(self):
+        out = StringIO()
+        args = [1]
+        options = {"fruit": "strawberry"}
+        call_command("list_user_harvest", *args, **options, stdout=out)
+        self.assertIn("Given user has no harvests with specified parameters", out.getvalue())
+        self.assertNotIn("cherry", out.getvalue())
+        self.assertNotIn("apple", out.getvalue())
+        self.assertNotIn("raspberry", out.getvalue())
+        self.assertNotIn("strawberry", out.getvalue())
+
+    def test_list_user_harvests_filter_by_year_not_found(self):
+        out = StringIO()
+        args = [1]
+        options = {"year": 1999}
+        call_command("list_user_harvest", *args, **options, stdout=out)
+        self.assertIn("Given user has no harvests with specified parameters", out.getvalue())
+        self.assertNotIn("cherry", out.getvalue())
+        self.assertNotIn("apple", out.getvalue())
+        self.assertNotIn("raspberry", out.getvalue())
+        self.assertNotIn("strawberry", out.getvalue())
 
 
 class CustomCommandListUsersTests(TestCase):
-    # TODO implement
-    pass
+    def test_list_users_no_users_existing(self):
+        out = StringIO()
+        call_command("list_users", stdout=out)
+        self.assertIn('no registered', out.getvalue())
 
+    def test_list_users_correct(self):
+        user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        user2 = User.objects.create_user(username="testeruser2", password="testeruserpass2")
+        create_dummy_harvests([{"owner": user, "year": 2022,
+                                "fruit": "raspberry",
+                                "number_of_harvests": 3},
+                               {"owner": user2, "year": 2022,
+                                "fruit": "raspberry",
+                                "number_of_harvests": 7}
+                               ])
+        out = StringIO()
+        call_command("list_users", stdout=out)
+        self.assertIn("testeruser", out.getvalue())
+        self.assertIn("testeruser2", out.getvalue())
+        self.assertIn("Registered users: 2", out.getvalue())
+        self.assertIn("3", out.getvalue())
+        self.assertIn("7", out.getvalue())
 
-class CustomCommandUserCountTests(TestCase):
-    # TODO implement
-    pass
