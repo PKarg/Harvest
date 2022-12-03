@@ -1,5 +1,7 @@
 import datetime
 import decimal
+import random
+from typing import Union
 
 from django.db import IntegrityError
 from django.test import TestCase, Client
@@ -10,6 +12,37 @@ from django.urls import reverse, resolve
 from . import views
 from .models import Harvest
 from .forms import HarvestForm
+
+
+def create_dummy_harvests(harvests_data: Union[dict, list[dict]]) -> None:
+    """
+
+    :param harvests_data: dict or list of dicts like {"owner": User, "number_of_harvests": int, "fruit": str, "year": int}
+    :return: None
+    """
+
+    def _gen_date(year: int, dates_used: list[datetime.date]) -> datetime.date:
+        g_date = datetime.date(year=year,
+                               month=random.randint(5, 9),
+                               day=random.randint(1, 30))
+        if g_date in dates_used:
+            return _gen_date(year, dates_used)
+        else:
+            return g_date
+
+
+    if not isinstance(harvests_data, list):
+        harvests_data = [harvests_data]
+    dates_used = []
+    for h_data in harvests_data:
+        for _ in range(h_data['number_of_harvests']):
+            date = _gen_date(year=h_data['year'], dates_used=dates_used)
+            dates_used.append(date)
+            Harvest.objects.create(owner=h_data['owner'],
+                                   amount=random.randint(100, 1000),
+                                   price=decimal.Decimal.from_float(0.5 + random.random() * 75),
+                                   fruit=h_data['fruit'],
+                                   date=date)
 
 
 class UrlsTests(TestCase):
@@ -190,37 +223,64 @@ class HarvestFormTests(TestCase):
 
 
 class IndexViewTests(TestCase):
-    # TODO implement
-    pass
-
     def setUp(self):
         self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        create_dummy_harvests(harvests_data=[{
+            "owner": self.user,
+            "number_of_harvests": 7,
+            "fruit": "raspberry",
+            "year": 2022
+        }, {
+            "owner": self.user,
+            "number_of_harvests": 5,
+            "fruit": "cherry",
+            "year": 2022
+        }, {
+            "owner": self.user,
+            "number_of_harvests": 3,
+            "fruit": "strawberry",
+            "year": 2022
+        }])
+
+    def test_unauthenticated_not_shown_details(self):
+        response = self.client.get(reverse("harvest:home"))
+        self.assertTemplateUsed(response, "harvest/index.html")
+        self.assertEquals(response.status_code, 200)
+        self.assertContains(response, "Hello")
+        self.assertNotContains(response, "Summary")
+
+    def test_authenticated_shown_details(self):
+        self.client.login(username="testeruser", password="testeruserpass")
+        response = self.client.get(reverse("harvest:home"))
+        self.assertTemplateUsed(response, "harvest/index.html")
+        self.assertEquals(response.status_code, 200)
+        self.assertContains(response, "Hello")
+        self.assertContains(response, "Summary")
+        self.assertEquals(response.context[0]['season_summary']['n_harvests'], 15)
 
 
 class HarvestAddViewTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
-        self.client = Client()
-
         Harvest.objects.create(date=datetime.date.today(),
                                fruit="cherry",
                                owner=self.user,
                                price=10,
                                amount=100)
 
-    def test_unauthorized_has_no_access(self):
+    def test_unauthenticated_has_no_access(self):
         response = self.client.get(reverse("harvest:harvest-add"))
 
         self.assertTrue("login" in response.url)
         self.assertEquals(response.status_code, 302)
 
-    def test_authorized_user_has_access(self):
+    def test_authenticated_user_has_access(self):
         self.client.login(username="testeruser", password="testeruserpass")
         response = self.client.get(reverse("harvest:harvest-add"))
 
         self.assertEquals(response.status_code, 200)
 
-    def test_authorized_user_creates_harvest(self):
+    def test_authenticated_user_creates_harvest(self):
         self.client.login(username="testeruser", password="testeruserpass")
         response = self.client.post(reverse("harvest:harvest-add"), data={
             "date": datetime.date.today(),
@@ -233,7 +293,7 @@ class HarvestAddViewTests(TestCase):
         self.assertTrue("harvest/list" in response.url)
         self.assertTemplateUsed("harvest/add")
 
-    def test_authorized_user_creates_harvest_duplicate_rejected(self):
+    def test_authenticated_user_creates_harvest_duplicate_rejected(self):
         self.client.login(username="testeruser", password="testeruserpass")
         response = self.client.post(reverse("harvest:harvest-add"), data={
             "date": datetime.date.today(),
@@ -246,7 +306,7 @@ class HarvestAddViewTests(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed("harvest/add")
 
-    def test_authorized_user_creates_harvest_bad_data(self):
+    def test_authenticated_user_creates_harvest_bad_data(self):
         self.client.login(username="testeruser", password="testeruserpass")
         response = self.client.post(reverse("harvest:harvest-add"), data={
             "date": datetime.date(1900, 1, 1),
@@ -260,7 +320,7 @@ class HarvestAddViewTests(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed("harvest/add")
 
-    def test_authorized_user_creates_harvest_empty_data(self):
+    def test_authenticated_user_creates_harvest_empty_data(self):
         self.client.login(username="testeruser", password="testeruserpass")
         response = self.client.post(reverse("harvest:harvest-add"), data={})
         self.assertEquals(response.status_code, 200)
@@ -285,7 +345,7 @@ class HarvestEditViewTests(TestCase):
                                     owner=self.user)
         self.test_harvest2.save()
 
-    def test_unauthorized_has_no_access(self):
+    def test_unauthenticated_has_no_access(self):
         response = self.client.get(f"/harvest/edit/{self.test_harvest.pk}")
         self.assertEquals(response.status_code, 302)
         self.assertTrue("login" in response.url)
@@ -398,7 +458,7 @@ class HarvestDeleteViewTests(TestCase):
                                     owner=self.user)
         self.test_harvest.save()
 
-    def test_unauthorized_has_no_access(self):
+    def test_unauthenticated_has_no_access(self):
         response = self.client.post(path=f"/harvest/delete/{self.test_harvest.pk}")
         self.assertEquals(response.status_code, 302)
 
@@ -445,7 +505,7 @@ class HarvestListViewTests(TestCase):
                                     owner=self.user)
         self.test_harvest3.save()
 
-    def test_unauthorized_has_no_access(self):
+    def test_unauthenticated_has_no_access(self):
         response = self.client.get(path=f"/harvest/list/")
         self.assertEquals(response.status_code, 302)
 
@@ -469,6 +529,7 @@ class HarvestListViewTests(TestCase):
         self.client.login(username="testeruser", password="testeruserpass", )
         response = self.client.get(path=f"/harvest/list/?harvests-per-page=3&fruit=kasztan")
         self.assertEquals(len(response.context[0]['harvests']), 0)
+
 
 class CustomCommandDeleteHarvestTests(TestCase):
     # TODO implement

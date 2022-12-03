@@ -14,7 +14,6 @@ from .models import Harvest
 
 def index(request: HttpRequest):
     """Homepage view displaying seasonal summary and 5 last harvests"""
-    # TODO implement
     # 5 recent harvests
     context = {"date": datetime.date.today()}
 

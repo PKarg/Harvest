@@ -222,6 +222,14 @@ a {
     width: 800px;
     background: #52734D;
     font-size: 22px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.index-container p {
+    height: 30px;
+    text-align: center;
+    vertical-align: center;
 }
 
 .index-container table {
