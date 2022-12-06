@@ -1,5 +1,6 @@
 import datetime
 import decimal
+import os
 import random
 from io import StringIO
 from typing import Union
@@ -10,6 +11,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.test.utils import setup_test_environment
 from django.urls import reverse, resolve
+from django.conf import settings
 
 from . import views
 from .models import Harvest
@@ -534,23 +536,116 @@ class HarvestListViewTests(TestCase):
 
 
 class CustomCommandDeleteHarvestTests(TestCase):
-    # TODO implement
-    pass
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        create_dummy_harvests({"owner": self.user,
+                               "year": 2022,
+                               "fruit": "raspberry",
+                               "number_of_harvests": 6})
+
+    def test_harvest_id_not_existing(self):
+        out = StringIO()
+        args = [777]
+        call_command("delete_harvest", *args, stdout=out)
+        self.assertIn(f"Harvest with id {777} does not exist", out.getvalue())
+
+    def test_harvest_deleted_successfully(self):
+        out = StringIO()
+        args = [1]
+        harvest = Harvest.objects.get(pk=1)
+        harvests_count = Harvest.objects.count()
+        call_command("delete_harvest", *args, stdout=out)
+        self.assertIn(f"Harvest {harvest} successfully deleted", out.getvalue())
+        self.assertEquals(harvests_count-1, Harvest.objects.count())
 
 
 class CustomCommandDeleteUserTests(TestCase):
-    # TODO implement
-    pass
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        create_dummy_harvests({"owner": self.user,
+                               "year": 2022,
+                               "fruit": "raspberry",
+                               "number_of_harvests": 6})
+
+    def test_user_id_not_existing(self):
+        out = StringIO()
+        args = [3]
+        call_command("delete_user", *args, stdout=out)
+        self.assertIn("User with given id does not exist", out.getvalue())
+
+    def test_user_correctly_deleted(self):
+        out = StringIO()
+        args = [1]
+        call_command("delete_user", *args, stdout=out)
+        harvests_count = Harvest.objects.count()
+        self.assertIn(f"User {self.user.username} successfully deleted", out.getvalue())
+        self.assertEquals(harvests_count, 0)
 
 
 class CustomCommandGenCsvTests(TestCase):
-    # TODO implement
-    pass
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        create_dummy_harvests({"owner": self.user,
+                               "year": 2022,
+                               "fruit": "raspberry",
+                               "number_of_harvests": 6})
+
+    def test_file_created(self):
+        out = StringIO()
+
+        opts = {"test": 1}
+
+        filename = f"test_harvests_{datetime.date.today()}.csv"
+        filepath = settings.BASE_DIR / "csv_out" / filename
+
+        call_command("gen_csv", stdout=out, **opts)
+        self.assertIn(filename, out.getvalue())
+        self.assertTrue(os.path.exists(filepath))
+
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+    def test_options_in_filename(self):
+        out = StringIO()
+
+        opts = {"test": 1,
+                "user_id": self.user.pk,
+                "fruit": "raspberry",
+                "year": 2022}
+
+        filename = f"test_harvests_{self.user.pk}_raspberry_2022_{datetime.date.today()}.csv"
+        filepath = settings.BASE_DIR / "csv_out" / filename
+
+        call_command("gen_csv", stdout=out, **opts)
+        self.assertIn(filename, out.getvalue())
+        self.assertTrue(os.path.exists(filepath))
+
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
+    def test_user_not_existing(self):
+        out = StringIO()
+
+        opts = {"test": 1,
+                "user_id": 777}
+
+        call_command("gen_csv", stdout=out, **opts)
+        self.assertIn(f"User with given id ({777}) does not exist", out.getvalue())
 
 
 class CustomCommandHarvestCountTests(TestCase):
-    # TODO implement
-    pass
+    def setUp(self):
+        self.user = User.objects.create_user(username="testeruser", password="testeruserpass")
+        create_dummy_harvests({"owner": self.user,
+                                "year": 2022,
+                                "fruit": "raspberry",
+                                "number_of_harvests": 6})
+
+    def test_harvests_count_correct(self):
+        hc = Harvest.objects.count()
+        out = StringIO()
+        call_command("harvest_count", stdout=out)
+        self.assertIn(str(hc), out.getvalue())
 
 
 class CustomCommandListUserHarvestTests(TestCase):

@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 self.stdout.write(f"User {harvests[0].owner.username} has {len(harvests)} Harvests"
                                   f" with specified parameters")
                 for harvest in harvests:
-                    self.stdout.write(f"{harvest.date} {harvest.fruit}, Amount harvested: {harvest.amount},"
+                    self.stdout.write(f"{harvest.pk}. {harvest.date} {harvest.fruit}, Amount harvested: {harvest.amount},"
                                       f" Price: {harvest.price}, Profit: {harvest.profits}")
             else:
                 message = "Given user has no harvests with specified parameters" if fruit or year \

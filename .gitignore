@@ -128,3 +128,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /randomtests.py
+/csv_out/
