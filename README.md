@@ -7,6 +7,7 @@ Currently implemented features:
 1. Full test suite
 2. Custom django-admin CLI commands (with tests)
 3. Full implementation of frontend templates using django templating language
+4. Docker and docker-compose integration (brach docker).
 
 Planned features:
 1. API implemented with Django Rest Framework
