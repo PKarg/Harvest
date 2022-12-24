@@ -1,7 +1,7 @@
 # Harvest
 Django app to manage seasonal harvests
 
-Full-stack application meant as a platform for development of various skills related to Django web framework.
+Full-stack application meant as a platform for testing and learning various libraries related to Django web framework.
 
 Currently implemented features:
 1. Full test suite
